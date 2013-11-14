@@ -11,10 +11,13 @@ import java.io.*;
 import com.google.common.collect.Sets;
 
 public class PreProcess {
-	private int limitNum = 100;
+	private int limitNum = 1000;
+	private int initiatorLimit = 100;
 	private int hop = 1;
 	private ArrayList<String> userList = new ArrayList<String>();//get users 
 	private ArrayList<String> repoList = new ArrayList<String>();//get repos 
+	private ArrayList<String> initiatorList = new ArrayList<String>();//get users 
+	private ArrayList<String> initiatorRepoList = new ArrayList<String>();//get repos 
 	private Map<String, ArrayList> dictMap = new HashMap<String, ArrayList>();//{user, repos}
 	private Map<String, ArrayList> itemMap = new HashMap<String, ArrayList>();//{user, items}
 	private Map<String, ArrayList> friendMap = new HashMap<String, ArrayList>();//{user, users in 1- hop}
@@ -44,7 +47,35 @@ public class PreProcess {
 	public Map<String, ArrayList> getTaskItemMap(){
 		return task_item_Map;
 	}
+
+	public ArrayList<String> getInitiatorList(){
+		return initiatorList;
+	}
 	
+	public ArrayList<String> getInitiatorReposList(){
+		return initiatorRepoList;
+	}
+	
+	public void setInitiatorRepoList(Connection con) throws SQLException{
+//		ArrayList<String> initiators = new ArrayList<String>();
+//		ArrayList<String> initiatorRepos = new ArrayList<String>();
+		
+		Statement stmt = null;
+		String queryUser = "SELECT user_login, repo_name " + 
+				"FROM repos LIMIT " + initiatorLimit;
+//		(SELECT repo_name, contributor_login "+
+		stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery(queryUser);
+		
+		while (rs.next()) {
+			String userName = rs.getString(1); // or rs.getString("NAME");
+			String repoName = rs.getString(2); // or rs.getString("NAME");
+			initiatorList.add(userName);
+			initiatorRepoList.add(repoName);
+//			System.out.println(" user name : "+userName);
+		}
+	}
+
 	public void getUserRepoDict(Connection con) throws SQLException{
 		Statement stmt = null;
 		String queryUser = "SELECT DISTINCT contributor_login FROM " + 

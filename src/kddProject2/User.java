@@ -9,6 +9,10 @@ public class User {
     private ArrayList<String> repoList = new ArrayList<String>();//repos he/she committed
     private Map<String, Float> relationDict = new HashMap<String, Float>();//other users and relation weight	 
 	
+    public User(String name){
+    	setUserName(name);
+    }
+    
     public void setUserName(String myName){
 		name = myName;
 	}
