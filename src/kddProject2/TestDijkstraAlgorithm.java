@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.io.*;
 
+import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.KruskalMinimumSpanningTree;
+
 //import org.junit.Test;
 //import de.vogella.algorithms.dijkstra.engine.DijkstraAlgorithm;
 //import de.vogella.algorithms.dijkstra.model.Edge;
@@ -38,7 +41,7 @@ public class TestDijkstraAlgorithm {
 		Connection dbCon = con.doConnection();
 		if(dbCon != null)
 			System.out.println("successfully connect to db");
-		
+		System.out.println("why there's no ");
 		PreProcess myPreProcess = new PreProcess();
 		
 		try{
@@ -140,11 +143,17 @@ public class TestDijkstraAlgorithm {
 		LinkedList<Vertex> path = dijkstra.getPath(nodes.get(10));
 		System.out.println("distance is "+ dijkstra.getDistance());
 
+		//minimum spanning tree
+		ArrayList<PathEdge> minTree = MST.kruskals(graph);
+		if(minTree == null){
+			System.out.println("no spanning tree for this group");
+		}
 //		assertNotNull(path);
 //		assertTrue(path.size() > 0);
 
 		for (Vertex vertex : path) {
 			System.out.println(vertex);
 		}
+		
 	}
 } 
