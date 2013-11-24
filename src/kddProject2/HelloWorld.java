@@ -4,21 +4,28 @@ import java.util.*;
 public class HelloWorld {
 	
     public static void main(String[] args) {
-//    	double num = (float)1/((float)1+(float)1);
-    	float a = 0;
-    	if(a == 0){
-    		System.out.println("not ji");
+
+        ArrayList<String> keys = new ArrayList<String>();
+        keys.add("main1");
+        keys.add("main2");
+        keys.add("main5");
+        keys.add("main3");
+        keys.add("main4");
+        keys.add("");
+    	Map<String, String> list1 = new HashMap<String, String>();
+    	list1.put("main1", "good");
+    	list1.put("main2", "bad");
+    	list1.put("main3", "not good");
+    	list1.put("main4", "also good");
+
+    	System.out.println("the keys " + keys);
+    	if(keys.contains("")){
+    		keys.remove("");
     	}
-//        list1.
-        
-//    	List<String> list1 = new ArrayList<String>();
-//    	list1.add("main1");
-//    	list1.add("Main2");
-//    	list1.add("main3");
-//    	list1.add("main4");
-//    	list1.add("main5");
-//    	list1.add("main6");
-    	
+    	System.out.println("the keys " + keys);
+//    	List<String> list2 = new ArrayList<String>(list1);
+//    	System.out.println("list 2"+list2);
+//    	System.out.println("contains one element "+ list2.contains(another));
 //    	Map<String, Integer> map = new HashMap<String, Integer>();
 //    	map.put("bji", 1);
 //    	int listSize = list1.size();

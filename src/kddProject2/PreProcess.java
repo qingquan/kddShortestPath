@@ -11,8 +11,8 @@ import java.io.*;
 import com.google.common.collect.Sets;
 
 public class PreProcess {
-	private int limitNum = 1000;
-	private int initiatorLimit = 100;
+	private int limitNum = 2000;
+	private int initiatorLimit = 300;
 	private int hop = 1;
 	private ArrayList<String> userList = new ArrayList<String>();//get users 
 	private ArrayList<String> repoList = new ArrayList<String>();//get repos 
@@ -22,6 +22,8 @@ public class PreProcess {
 	private Map<String, ArrayList> itemMap = new HashMap<String, ArrayList>();//{user, items}
 	private Map<String, ArrayList> friendMap = new HashMap<String, ArrayList>();//{user, users in 1- hop}
 	private Map<String, ArrayList> task_item_Map = new HashMap<String, ArrayList>();//{repo, items}
+	private Map<String, ArrayList> repo_user_Map = new HashMap<String, ArrayList>();//{repo, users}
+
     Map<String, Map> relationMap = new HashMap<String, Map>();//{user, {user, relationweight}}
 
 	public ArrayList<String> getUserList(){
@@ -56,6 +58,10 @@ public class PreProcess {
 		return initiatorRepoList;
 	}
 	
+	public Map<String, ArrayList> getRepoUserMap(){
+		return repo_user_Map;
+	}
+	
 	public void setInitiatorRepoList(Connection con) throws SQLException{
 //		ArrayList<String> initiators = new ArrayList<String>();
 //		ArrayList<String> initiatorRepos = new ArrayList<String>();
@@ -69,7 +75,7 @@ public class PreProcess {
 		
 		while (rs.next()) {
 			String userName = rs.getString(1); // or rs.getString("NAME");
-			String repoName = rs.getString(2); // or rs.getString("NAME");
+			String repoName = rs.getString(2); // or rsfinalCost.getString("NAME");
 			initiatorList.add(userName);
 			initiatorRepoList.add(repoName);
 //			System.out.println(" user name : "+userName);
@@ -128,8 +134,7 @@ public class PreProcess {
 	public void getTaskItemMapping(Connection con) throws SQLException{
 		Statement stmt = null;
 		String queryRepo = "SELECT DISTINCT repo_name FROM " + 
-	    					"(SELECT repo_name, contributor_login "+
-	    					"FROM contributors LIMIT " + limitNum + " ) t ";
+	    					"repos LIMIT "+ initiatorLimit;
 		
 		stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery(queryRepo);
@@ -152,10 +157,24 @@ public class PreProcess {
 				langList.add(langName);
 			}	
 			task_item_Map.put(s2, langList);
+		}
+		//------------------users in this repo---------------------
+		for(String s2: repoList){
+			ArrayList<String> userList = new ArrayList<String>();
+			String queryUsers = 
+					"SELECT DISTINCT contributor_login " + 
+							"FROM contributors " + 
+							"WHERE repo_name= '" + s2 + "' "+
+							"LIMIT "+ limitNum;
+			ResultSet rsUsers= stmt.executeQuery(queryUsers);
+			while(rsUsers.next()){
+				String userName = rsUsers.getString(1);
+				userList.add(userName);
+			}	
+			repo_user_Map.put(s2, userList);
 		}	
-		
 	}
-
+	
 	public ArrayList<Map> getRelationWeight(ArrayList<String> users, Map<String, ArrayList> dictMap){
 		ArrayList<Map> relationAndFriendMap = new ArrayList<Map>();
 		

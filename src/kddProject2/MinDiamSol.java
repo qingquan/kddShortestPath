@@ -14,6 +14,100 @@ import com.google.common.collect.Sets;
 
 public class MinDiamSol{
 	
+
+	public void writeToMFFile(ArrayList<String> finalGroupMem, ArrayList<String> itemsRequired,
+			Map<String, ArrayList> itemMap, ArrayList<Map> EdgeInMid, Map<String, Double> capacityMap){
+
+		//output to txt file, to feed into maxflow	
+		FileWriter writer;
+		try {
+			writer = new FileWriter("files/maxflow.txt");
+			int num_node = finalGroupMem.size()+itemsRequired.size()+2;
+			int num_edge = finalGroupMem.size()+itemsRequired.size()+EdgeInMid.size();
+			String str="";
+			str += num_node;
+			str += " ";
+			str += num_edge;
+			str +="\r\n";				
+			writer.write(str);
+
+			//Task 编号，从1到k,一共k个item
+			Map<String, Integer> itemMapMaxflow = new HashMap<String, Integer>();
+			int count = 1;
+			for(String item_r: itemsRequired){
+				itemMapMaxflow.put(item_r, count);
+				count++;
+			}
+
+			//User 编号，从k+1到n-2
+			Map<String, Integer> userMapMaxflow = new HashMap<String, Integer>();
+			count = itemsRequired.size()+1;
+			for(String user_r: finalGroupMem){
+				userMapMaxflow.put(user_r, count);
+				count++;
+			}
+			//System.out.println(userMapMaxflow);
+			//source到Task的点们      
+			String str1 = "";
+			for(String item_r: itemsRequired){
+				str1 += "0 ";
+				str1 += itemMapMaxflow.get(item_r);
+				str1 += " 1";
+				str1 += "\r\n";
+			}
+			writer.write(str1);
+			//Users到sink的点们 
+			//System.out.println(finalGroupMem);
+			String str2 = "";
+			
+			if(finalGroupMem.contains("")){
+				System.out.println("it contains blank");
+				finalGroupMem.remove("");
+			}
+			
+			for(String user_r: finalGroupMem){
+				System.out.println("the group member " + finalGroupMem);
+				System.out.println("what's users " + user_r);
+				System.out.println("capacities " + capacityMap);
+				if(capacityMap.get(user_r) == null){
+					System.out.println("problem in the capacity " + user_r);
+				}
+				str2 += userMapMaxflow.get(user_r);
+				str2 += " ";
+				str2 += num_node-1;
+				str2 += " ";
+				double cap = Math.ceil(capacityMap.get(user_r));
+				str2 += (int)cap;
+				str2 += "\r\n";
+			}
+			writer.write(str2);
+			//Task 到Users的点们
+			String str3 ="";
+			for (String item_r: itemsRequired){
+				for(String user_r: finalGroupMem){
+					ArrayList<String> user_items = itemMap.get(user_r);
+					for(String item_u: user_items){
+						if(item_r.equals(item_u)){
+							str3 += itemMapMaxflow.get(item_r);
+							str3 += " ";
+							str3 += userMapMaxflow.get(user_r);
+							str3 += " 1";
+							str3 += "\r\n";
+							//break;
+						}
+					}
+					//break;
+				}	            		
+			}
+			writer.write(str3);	            
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}//txt done.
+	}
+	
+	
 	public static void main(String arg[]){
 		//connect to database
 		TestCon con =new TestCon();
@@ -167,85 +261,13 @@ public class MinDiamSol{
 		finalGroupMem.add(v);
 		String member = v;
 		int maxflow_old = 0;
+		
+		MinDiamSol minDiaAlg = new MinDiamSol();
+	
 		for(int i=0; i<relationSorted.size();i++){
-									
-			//写个txt让Maxflow读一下	
-			
-	        FileWriter writer;
-	        try {
-	            writer = new FileWriter("files/maxflow.txt");
-	            int num_node = finalGroupMem.size()+itemsRequired.size()+2;
-				int num_edge = finalGroupMem.size()+itemsRequired.size()+EdgeInMid.size();
-				String str="";
-				str += num_node;
-				str += " ";
-				str += num_edge;
-				str +="\r\n";				
-	            writer.write(str);
-	      
-	            //Task 编号，从1到k,一共k个item
-	            Map<String, Integer> itemMapMaxflow = new HashMap<String, Integer>();
-	            int count = 1;
-	            for(String item_r: itemsRequired){
-	            	itemMapMaxflow.put(item_r, count);
-	            	count++;
-	            }
-	            
-	            //User 编号，从k+1到n-2
-	            Map<String, Integer> userMapMaxflow = new HashMap<String, Integer>();
-	            count = itemsRequired.size()+1;
-	            for(String user_r: finalGroupMem){
-	            	userMapMaxflow.put(user_r, count);
-	            	count++;
-	            }
-	            //System.out.println(userMapMaxflow);
-	            //source到Task的点们      
-	            String str1 = "";
-	            for(String item_r: itemsRequired){
-	            	str1 += "0 ";
-	            	str1 += itemMapMaxflow.get(item_r);
-	            	str1 += " 1";
-	            	str1 += "\r\n";
-	            }
-	            writer.write(str1);
-	            //Users到sink的点们 
-	            //System.out.println(finalGroupMem);
-	            String str2 = "";
-	            
-	            for(String user_r: finalGroupMem){
-	            	str2 += userMapMaxflow.get(user_r);
-	            	str2 += " ";
-	            	str2 += num_node-1;
-	            	str2 += " ";
-	            	double cap = Math.ceil(capacityMap.get(user_r));
-	            	str2 += (int)cap;
-	            	str2 += "\r\n";
-	            }
-	            writer.write(str2);
-	            //Task 到Users的点们
-	            String str3 ="";
-	            for (String item_r: itemsRequired){
-	            	for(String user_r: finalGroupMem){
-	            		ArrayList<String> user_items = itemMap.get(user_r);
-	            		for(String item_u: user_items){
-	            			if(item_r.equals(item_u)){
-	            				str3 += itemMapMaxflow.get(item_r);
-	            				str3 += " ";
-	            				str3 += userMapMaxflow.get(user_r);
-	            				str3 += " 1";
-	            				str3 += "\r\n";
-	            				//break;
-	            			}
-	            		}
-	            		//break;
-	            	}	            		
-	            }
-	            writer.write(str3);	            
-	            writer.flush();
-	            writer.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }//txt done.
+			////写个txt让Maxflow读一下	
+			minDiaAlg.writeToMFFile(finalGroupMem, itemsRequired, itemMap, EdgeInMid, capacityMap);
+
 	        Maxflow mf = new Maxflow();
 	        mf.runMF();
 	        System.out.println("maxflow=" + mf.maxFlow);
@@ -288,12 +310,7 @@ public class MinDiamSol{
 		System.out.println(finalGroupMemberList.get(1));*/
 
 	}
-	
-	
 }
-
-
-
 
 /*
 ArrayList<String> userList = new ArrayList<String>(); 
@@ -320,3 +337,84 @@ try {
 }
 System.out.println(userList);
 System.out.println(userCapability);*/
+
+
+
+//
+////写个txt让Maxflow读一下	
+//
+//FileWriter writer;
+//try {
+//writer = new FileWriter("files/maxflow.txt");
+//int num_node = finalGroupMem.size()+itemsRequired.size()+2;
+//int num_edge = finalGroupMem.size()+itemsRequired.size()+EdgeInMid.size();
+//String str="";
+//str += num_node;
+//str += " ";
+//str += num_edge;
+//str +="\r\n";				
+//writer.write(str);
+//
+////Task 编号，从1到k,一共k个item
+//Map<String, Integer> itemMapMaxflow = new HashMap<String, Integer>();
+//int count = 1;
+//for(String item_r: itemsRequired){
+//itemMapMaxflow.put(item_r, count);
+//count++;
+//}
+//
+////User 编号，从k+1到n-2
+//Map<String, Integer> userMapMaxflow = new HashMap<String, Integer>();
+//count = itemsRequired.size()+1;
+//for(String user_r: finalGroupMem){
+//userMapMaxflow.put(user_r, count);
+//count++;
+//}
+////System.out.println(userMapMaxflow);
+////source到Task的点们      
+//String str1 = "";
+//for(String item_r: itemsRequired){
+//str1 += "0 ";
+//str1 += itemMapMaxflow.get(item_r);
+//str1 += " 1";
+//str1 += "\r\n";
+//}
+//writer.write(str1);
+////Users到sink的点们 
+////System.out.println(finalGroupMem);
+//String str2 = "";
+//
+//for(String user_r: finalGroupMem){
+//str2 += userMapMaxflow.get(user_r);
+//str2 += " ";
+//str2 += num_node-1;
+//str2 += " ";
+//double cap = Math.ceil(capacityMap.get(user_r));
+//str2 += (int)cap;
+//str2 += "\r\n";
+//}
+//writer.write(str2);
+////Task 到Users的点们
+//String str3 ="";
+//for (String item_r: itemsRequired){
+//for(String user_r: finalGroupMem){
+//ArrayList<String> user_items = itemMap.get(user_r);
+//for(String item_u: user_items){
+//if(item_r.equals(item_u)){
+//str3 += itemMapMaxflow.get(item_r);
+//str3 += " ";
+//str3 += userMapMaxflow.get(user_r);
+//str3 += " 1";
+//str3 += "\r\n";
+////break;
+//}
+//}
+////break;
+//}	            		
+//}
+//writer.write(str3);	            
+//writer.flush();
+//writer.close();
+//} catch (IOException e) {
+//e.printStackTrace();
+//}//txt done.
